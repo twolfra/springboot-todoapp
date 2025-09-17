@@ -15,10 +15,16 @@ import java.util.List;
 @RequestMapping("/tasks")
 public class TaskController {
 
-    private final TaskRepository repo;
+    private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
+    private final TaskMapper taskMapper;
 
-    public TaskController(TaskRepository repo) {
-        this.repo = repo;
+    public TaskController(TaskRepository taskRepository,
+                          UserRepository userRepository,
+                          TaskMapper taskMapper) {
+        this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
+        this.taskMapper = taskMapper;
     }
 
     // Get tasks (users see only their own, admins see all)
@@ -29,24 +35,27 @@ public class TaskController {
                 .anyMatch(r -> r.equals("ROLE_ADMIN"));
 
         List<Task> tasks = isAdmin
-                ? repo.findAll()
-                : repo.findByOwner(auth.getName());
+                ? taskRepository.findAll()
+                : taskRepository.findByUserUsername(auth.getName()); // 👈 updated repo method
 
         return tasks.stream()
-                .map(TaskMapper::toDTO)
+                .map(taskMapper::toDTO)
                 .toList();
     }
 
     // Add task → always linked to logged-in user
     @PostMapping
     public TaskDTO addTask(@Valid @RequestBody CreateTaskRequest req, Authentication auth) {
+        User user = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Task task = new Task();
         task.setTitle(req.getTitle());
         task.setDone(req.isDone());
-        task.setOwner(auth.getName());
+        task.setUser(user);
 
-        Task saved = repo.save(task);
-        return TaskMapper.toDTO(saved);
+        Task saved = taskRepository.save(task);
+        return taskMapper.toDTO(saved);
     }
 
     // Update task → only owner or admin
@@ -54,26 +63,26 @@ public class TaskController {
     public TaskDTO updateTask(@PathVariable Long id,
                               @Valid @RequestBody CreateTaskRequest req,
                               Authentication auth) {
-        return repo.findById(id).map(task -> {
+        return taskRepository.findById(id).map(task -> {
             boolean isAdmin = auth.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .anyMatch(r -> r.equals("ROLE_ADMIN"));
 
-            if (!isAdmin && !task.getOwner().equals(auth.getName())) {
+            if (!isAdmin && !task.getUser().getUsername().equals(auth.getName())) {
                 throw new ForbiddenException("You are not allowed to update this task");
             }
 
             task.setTitle(req.getTitle());
             task.setDone(req.isDone());
 
-            Task updated = repo.save(task);
-            return TaskMapper.toDTO(updated);
+            Task updated = taskRepository.save(task);
+            return taskMapper.toDTO(updated);
         }).orElseThrow(() -> new RuntimeException("Task not found with id " + id));
     }
 
     // Delete task → only admin (already enforced in SecurityConfig)
     @DeleteMapping("/{id}")
     public void deleteTask(@PathVariable Long id) {
-        repo.deleteById(id);
+        taskRepository.deleteById(id);
     }
 }

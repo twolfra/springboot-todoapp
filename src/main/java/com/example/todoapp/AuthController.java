@@ -31,16 +31,20 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> register(@RequestBody User user,
                                                     @RequestParam(defaultValue = "user") String role) {
         user.setPassword(encoder.encode(user.getPassword()));
+
         if ("admin".equalsIgnoreCase(role)) {
-            user.setRoles(Set.of("ROLE_ADMIN"));
+            user.setRoles("ROLE_ADMIN");
         } else {
-            user.setRoles(Set.of("ROLE_USER"));
+            user.setRoles("ROLE_USER");
         }
+
         User saved = userRepo.save(user);
 
         return ResponseEntity.ok(
-                new AuthResponseDTO("User registered successfully",
-                        new UserDTO(saved.getUsername(), saved.getRoles()))
+                new AuthResponseDTO(
+                        "User registered successfully",
+                        new UserDTO(saved.getUsername(), Set.of(saved.getRoles())) // wrap single string into Set
+                )
         );
     }
 
@@ -49,11 +53,12 @@ public class AuthController {
         return userRepo.findByUsername(req.getUsername())
                 .filter(u -> encoder.matches(req.getPassword(), u.getPassword()))
                 .map(u -> {
-                    String token = jwtUtil.generateToken(u.getUsername(), u.getRoles());
+                    // generate token with single role
+                    String token = jwtUtil.generateToken(u.getUsername(), Set.of(u.getRoles()));
 
                     ResponseCookie cookie = ResponseCookie.from("JWT", token)
                             .httpOnly(true)
-                            .secure(false) // set true in production with HTTPS
+                            .secure(false) // ⚠️ set to true in production with HTTPS
                             .path("/")
                             .sameSite("Lax")
                             .maxAge(Duration.ofHours(4))
@@ -61,8 +66,10 @@ public class AuthController {
 
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                            .body(new AuthResponseDTO("Login successful",
-                                    new UserDTO(u.getUsername(), u.getRoles())));
+                            .body(new AuthResponseDTO(
+                                    "Login successful",
+                                    new UserDTO(u.getUsername(), Set.of(u.getRoles()))
+                            ));
                 })
                 .orElseThrow(() -> new UnauthorizedException("Invalid username or password"));
     }
