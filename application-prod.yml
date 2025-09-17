@@ -3,10 +3,18 @@ spring:
     url: jdbc:postgresql://db:5432/todoapp
     username: todoapp
     password: secret
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none   # Flyway controls schema
     show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    database-type: postgresql
+    connect-retries: 3
 
 jwt:
   secret: ${JWT_SECRET}
