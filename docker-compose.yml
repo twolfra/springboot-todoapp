@@ -16,9 +16,9 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
+  backend:
     build: .
-    container_name: todoapp-app
+    container_name: todoapp-backend
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
@@ -32,6 +32,18 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+
+  frontend:
+    build:
+      context: ../todo-frontend   # path to your React frontend project
+      dockerfile: Dockerfile
+    container_name: todoapp-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8080
 
 volumes:
   postgres_data:

@@ -20,7 +20,7 @@ public class User {
     // 🔑 store one role string like "ROLE_USER" or "ROLE_ADMIN"
 
     @JsonIgnore
-    @Column(name = "role")
+    @Column(name = "roles", nullable = false) // 👈 match DB column name
     private String roles;
 
     public User() {}
