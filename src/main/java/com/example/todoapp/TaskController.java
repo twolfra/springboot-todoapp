@@ -2,6 +2,7 @@ package com.example.todoapp;
 
 import com.example.todoapp.dto.TaskDTO;
 import com.example.todoapp.dto.CreateTaskRequest;
+import com.example.todoapp.dto.UpdateTaskStatusRequest;
 import com.example.todoapp.exception.ForbiddenException;
 import com.example.todoapp.mapper.TaskMapper;
 import org.springframework.security.core.Authentication;
@@ -82,7 +83,37 @@ public class TaskController {
 
     // Delete task → only admin (already enforced in SecurityConfig)
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskRepository.deleteById(id);
+    public void deleteTask(@PathVariable Long id, Authentication auth) {
+        taskRepository.findById(id).ifPresent(task -> {
+            boolean isAdmin = auth.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .anyMatch(r -> r.equals("ROLE_ADMIN"));
+
+            if (!isAdmin && !task.getUser().getUsername().equals(auth.getName())) {
+                throw new ForbiddenException("You are not allowed to delete this task");
+            }
+
+            taskRepository.delete(task);
+        });
     }
+    @PatchMapping("/{id}/done")
+    public TaskDTO toggleDone(@PathVariable Long id,
+                              @RequestBody UpdateTaskStatusRequest req,
+                              Authentication auth) {
+        return taskRepository.findById(id).map(task -> {
+            boolean isAdmin = auth.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .anyMatch(r -> r.equals("ROLE_ADMIN"));
+
+            if (!isAdmin && !task.getUser().getUsername().equals(auth.getName())) {
+                throw new ForbiddenException("You are not allowed to update this task");
+            }
+
+            task.setDone(req.isDone());
+            Task updated = taskRepository.save(task);
+            return taskMapper.toDTO(updated);
+        }).orElseThrow(() -> new RuntimeException("Task not found with id " + id));
+    }
+
+
 }

@@ -1,4 +1,6 @@
 package com.example.todoapp;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.todoapp.dto.UserDTO;
 import com.example.todoapp.dto.AuthResponseDTO;
@@ -60,7 +62,7 @@ public class AuthController {
                             .httpOnly(true)
                             .secure(false) // ⚠️ set to true in production with HTTPS
                             .path("/")
-                            .sameSite("Lax")
+                            .sameSite("Lax") // set none to enable different localhost ports
                             .maxAge(Duration.ofHours(4))
                             .build();
 
@@ -87,5 +89,24 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
                 .body(new LogoutResponseDTO("Logged out"));
+
     }
+    // endpoint for returning current user
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> me(@AuthenticationPrincipal UserDetails principal) {
+        if (principal == null) {
+            throw new UnauthorizedException("Not logged in");
+        }
+
+        return userRepo.findByUsername(principal.getUsername())
+                .map(u -> ResponseEntity.ok(
+                        new UserDTO(
+                                u.getUsername(),
+                                Set.of(u.getRoles()) // wrap single string into Set
+                        )
+                ))
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+    }
+
+
 }
