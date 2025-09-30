@@ -15,8 +15,8 @@ CREATE TABLE tasks (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     done BOOLEAN DEFAULT FALSE,
-    owner_id INT NOT NULL,
-    CONSTRAINT fk_task_owner FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+    user_id INT NOT NULL,
+    CONSTRAINT fk_task_owner FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Default admin user (password = "admin")

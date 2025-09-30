@@ -20,7 +20,7 @@ docker compose up db
 
 Run Spring Boot app locally (outside Docker):
 
-./mvnw spring-boot:run
+source .env.dev && ./mvnw spring-boot:run
 
 #### 3. Start Frontend
 
@@ -37,7 +37,7 @@ The Vite proxy (vite.config.js) ensures calls like /auth/login are forwarded to 
 
 Everything runs in containers:
 
-docker compose up --build
+docker compose --env-file .env.prod up --build
 
 Services
 

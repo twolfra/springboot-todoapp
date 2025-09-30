@@ -4,13 +4,13 @@ public class TaskDTO {
     private Long id;
     private String title;
     private boolean done;
-    private String owner; // just username, not full User entity
+    private String username; // 🔄 renamed from owner
 
-    public TaskDTO(Long id, String title, boolean done, String owner) {
+    public TaskDTO(Long id, String title, boolean done, String username) {
         this.id = id;
         this.title = title;
         this.done = done;
-        this.owner = owner;
+        this.username = username;
     }
 
     // Getters & setters
@@ -23,6 +23,6 @@ public class TaskDTO {
     public boolean isDone() { return done; }
     public void setDone(boolean done) { this.done = done; }
 
-    public String getOwner() { return owner; }
-    public void setOwner(String owner) { this.owner = owner; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 }
