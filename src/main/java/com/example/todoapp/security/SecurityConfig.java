@@ -37,7 +37,7 @@ public class SecurityConfig {
         cfg.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:3000",
-                "https://springboot-todoapp-1k00.onrender.com"
+                "https://todo-frontend-oo81.onrender.com"
         ));
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("Content-Type")); // no need for X-XSRF-TOKEN now
