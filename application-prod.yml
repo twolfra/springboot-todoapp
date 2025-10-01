@@ -3,6 +3,9 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      initialization-fail-timeout: 60000  # wait 60s before failing
+      connection-timeout: 30000          # wait 30s per connection attempt
 
   jpa:
     hibernate:
@@ -14,7 +17,7 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
     database-type: postgresql
-    connect-retries: 3
+    connect-retries: 5
 
 jwt:
   secret: ${JWT_SECRET}
