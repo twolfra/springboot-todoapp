@@ -62,7 +62,7 @@ public class AuthController {
                             .httpOnly(true)
                             .secure(false) // ⚠️ set to true in production with HTTPS
                             .path("/")
-                            .sameSite("Lax") // set none to enable different localhost ports
+                            .sameSite("None") // set none to enable different localhost ports
                             .maxAge(Duration.ofHours(4))
                             .build();
 
