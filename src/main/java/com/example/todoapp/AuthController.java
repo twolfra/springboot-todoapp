@@ -60,7 +60,7 @@ public class AuthController {
 
                     ResponseCookie cookie = ResponseCookie.from("JWT", token)
                             .httpOnly(true)
-                            .secure(false) // ⚠️ set to true in production with HTTPS
+                            .secure(true) // ⚠️ set to true in production with HTTPS
                             .path("/")
                             .sameSite("None") // set none to enable different localhost ports
                             .maxAge(Duration.ofHours(4))
