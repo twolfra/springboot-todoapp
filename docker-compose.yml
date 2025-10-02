@@ -9,7 +9,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"   # host:container
+      - "5433:5432" # host:container
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U todoapp -d todoapp"]
       interval: 10s
@@ -40,29 +40,20 @@ services:
 
   frontend:
     build:
-      context: ../todo-frontend   # path to your React frontend project
+      context: ../todo-frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8080   # 👈 overrides at build
     container_name: todoapp-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
-    environment:
-      # use service name "backend" so container can resolve it
-      VITE_API_URL: http://backend:8080
-    volumes:
-      - type: bind
-        source: ../todo-frontend
-        target: /app
-      - type: volume
-        source: node_modules
-        target: /app/node_modules
     networks:
       - todoapp-net
 
 volumes:
   postgres_data:
-  node_modules:
 
 networks:
   todoapp-net:

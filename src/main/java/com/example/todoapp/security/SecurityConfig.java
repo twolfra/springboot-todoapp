@@ -35,12 +35,14 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of(
+                "http://localhost",
+                "http://localhost:80",
                 "http://localhost:5173",
                 "http://localhost:3000",
                 "https://todo-frontend-oo81.onrender.com"
         ));
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Content-Type")); // no need for X-XSRF-TOKEN now
+        cfg.setAllowedHeaders(List.of("*")); // 👈 allow all headers
         cfg.setAllowCredentials(true); // required to send cookies
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
